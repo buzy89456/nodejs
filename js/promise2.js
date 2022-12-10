@@ -13,7 +13,8 @@ let brushPromise = doWorkPromise("刷牙", 3000);
 brushPromise
   .then((data) => {
     console.log(data);
-    return doWorkPromise("吃早餐", 5000);
+    let eatPromise = doWorkPromise("吃早餐", 5000);
+    return eatPromise;
   })
   .then((data) => {
     console.log(data);
@@ -24,4 +25,7 @@ brushPromise
   })
   .catch((err) => {
     console.error("發生錯誤", err);
+  })
+  .finally(() => {
+    console.log("成功或失敗都會跑的finally");
   });
