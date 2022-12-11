@@ -20,7 +20,6 @@ let brushPromise = doWorkPromise("刷牙", 1000);
 brushPromise
   .then((data) => {
     console.log("brushPromise", data);
-
     let eatPromise = doWorkPromise("吃早餐", 3000);
     eatPromise
       .then((data) => {
