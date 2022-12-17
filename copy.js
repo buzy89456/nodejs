@@ -14,39 +14,37 @@ console.log(a, b);
 
 // 傳址, 傳值
 let person = {
-    name: "Ian",
-    age: 25,
-    city: "Taiwan"
+  name: "Ian",
+  age: 25,
+  city: "Taiwan",
 };
 let another = { ...person, age: 28 };
 console.log(another.age);
 console.log(person.age);
 console.log(another);
 
-
 let c = {
-    name: 'John',
-    age: 25,
+  name: "John",
+  age: 25,
 };
 let d = c;
 c.age = 28;
 console.log(d.age);
 
-
 let e = {
-    name: 'John',
-    age: 25,
+  name: "John",
+  age: 25,
 };
-let f = { age: 28 }
+let f = { age: 28 };
 console.log(e.age);
 
 let g = {
-    name: 'John',
-    age: 25,
-    address: {
-        zip: 123,
-        city: 'abc'
-    }
+  name: "John",
+  age: 25,
+  address: {
+    zip: 123,
+    city: "abc",
+  },
 };
 let h = { ...g };
 console.log(g);
