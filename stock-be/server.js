@@ -65,6 +65,15 @@ app.get('/api/stocks', async (req, res, next) => {
   res.json(data);
 });
 
+app.get('/api/stocks/:stockId', async (req, res, next) => {
+  console.log('/api/stocks/:stockId', req.params.stockId);
+
+  let [data] = await pool.query('SELECT * FROM stock_prices WHERE stock_id=?', [
+    req.params.stockId,
+  ]);
+  res.json(data);
+});
+
 app.use((req, res, next) => {
   console.log('這裡是的一個中間件 C');
   next();
