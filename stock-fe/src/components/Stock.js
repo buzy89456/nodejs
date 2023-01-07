@@ -26,17 +26,19 @@ const Stock = () => {
     console.log('counter');
   }, [counter]);
 
-  // TODO: 把預設值拿掉，跟 input 綁定
-  const [stockId, setStockId] = useState('5678');
-  const [stockName, setStockName] = useState('耶誕快樂');
+  const [stockId, setStockId] = useState('');
+  const [stockName, setStockName] = useState('');
   async function handleSubmit(e) {
     console.log('handleSubmit');
     e.preventDefault();
+    // post後面的變數送入後端
     let response = await axios.post('http://localhost:3001/api/stocks', {
       stockId,
       stockName,
     });
     console.log(response.data);
+    setStockId('');
+    setStockName('');
   }
 
   return (
