@@ -30,7 +30,15 @@ app.use(
 // 預設是全部開放
 // 也可以做部分限制，參考 npm cors 的文件
 const cors = require('cors');
-app.use(cors());
+app.use(
+  cors({
+    // 為了讓 browser 在 CORS 的情況下還是幫我們送 cookie
+    //  必須把 credentials 設定成 true
+    // 但是，當你把 credentials 設定成true，就一定要設定 origin (來源)
+    origin: ['localhost:3000'],
+    credentials: true,
+  })
+);
 
 // middleware => pipeline pattern
 
@@ -76,6 +84,9 @@ app.use('/api/stocks', stockRouter);
 
 const authRouter = require('./routers/authRouter');
 app.use('/api/auth', authRouter);
+
+const memberRouter = require('./routers/memberRouter');
+app.use('/api/members', memberRouter);
 
 app.use((req, res, next) => {
   console.log('這裡是的一個中間件 C');
