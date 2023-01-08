@@ -1,44 +1,34 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const Stock = () => {
   const [error, setError] = useState(null);
   const [stocks, setStocks] = useState([]);
-  const [counter, setCounter] = useState(0);
 
   useEffect(() => {
-    console.log('沒有第二個參數');
-  });
-
-  useEffect(() => {
-    console.log('空陣列');
     // 在 component 初始化的時候跑一次
     // 通常會把去跟後端要資料的動作放在這裡
     async function getStocks() {
       let response = await axios.get('http://localhost:3001/api/stocks');
+      // console.log(response);
       setStocks(response.data);
     }
     getStocks();
   }, []);
 
-  useEffect(() => {
-    console.log('counter');
-  }, [counter]);
-
-  const [stockId, setStockId] = useState('');
-  const [stockName, setStockName] = useState('');
+  const [stockId, setStockId] = useState('5678');
+  const [stockName, setStockName] = useState('耶誕快樂');
   async function handleSubmit(e) {
     console.log('handleSubmit');
+    // 關閉表單的預設行為
     e.preventDefault();
-    // post後面的變數送入後端
+    // ajax
     let response = await axios.post('http://localhost:3001/api/stocks', {
       stockId,
       stockName,
     });
     console.log(response.data);
-    setStockId('');
-    setStockName('');
   }
 
   return (
@@ -46,25 +36,17 @@ const Stock = () => {
       {error && <div>{error}</div>}
       <h2 className="ml-7 mt-6 text-xl text-gray-600">股票代碼</h2>
 
-      <button
-        onClick={() => {
-          setCounter(counter + 1);
-        }}
-      >
-        add {counter}
-      </button>
-
-      {stocks.map((stock) => {
+      {stocks.map((stock, index) => {
         return (
           <div
-            className="bg-white bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg m-6 cursor-pointer"
             key={stock.id}
+            className="bg-white bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg m-6 cursor-pointer"
           >
             <Link to={`/stock/${stock.id}`}>
               <h2 className="text-2xl font-bold mb-2 text-gray-800">
-                股票代碼: {stock.id}
+                {stock.id}
               </h2>
-              <p className="text-gray-700">股票名稱: {stock.name}</p>
+              <p className="text-gray-700">{stock.name}</p>
             </Link>
           </div>
         );
@@ -104,8 +86,8 @@ const Stock = () => {
           />
         </div>
         <button
-          className="text-xl bg-indigo-300 px-4 py-2.5 rounded hover:bg-indigo-400 transition duration-200 ease-in"
           onClick={handleSubmit}
+          className="text-xl bg-indigo-300 px-4 py-2.5 rounded hover:bg-indigo-400 transition duration-200 ease-in"
         >
           新增
         </button>

@@ -3,45 +3,28 @@ const express = require('express');
 const app = express();
 
 require('dotenv').config();
-// 建立資料庫連線，不需要用await，需要連線時才使用(底下code有連線)
-const pool = require('./utils/db');
+const mysql2 = require('mysql2/promise');
 
-// 允許跨源存取
-// 預設是全部開放
-// 也可以做部分限制，參考 npm cors 的文件
-const cors = require('cors');
-app.use(
-  cors({
-    // 為了讓 browser 在 CORS 的情況下還是幫我們送 cookie
-    // 必須把 credentails 設定成 true
-    // 但是，當你把 credentials 設定成 true，就一定要設定 origin (來源)
-    origin: ['http://localhost:3000'],
-    credentials: true,
-  })
-);
+let pool = mysql2.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PWD,
+  database: process.env.DB_NAME,
+  // 限制 pool 連線數的上限
+  connectionLimit: 10,
+});
 
 // 如果要讓 express 認得 json 資料
 // request Content-Type: application/json
 // 需要加上這個中間件
 app.use(express.json());
 
-const expressSession = require('express-session');
-const FileStore = require('session-file-store')(expressSession);
-const path = require('path');
-app.use(
-  expressSession({
-    // 告訴 express-session session 要存哪裡
-    store: new FileStore({
-      path: path.join(__dirname, '..', 'sessions'),
-    }),
-    secret: process.env.SESSION_SECRET,
-    // true: 即使 session 沒有改變也重新儲存一次
-    // 取決於你用的 storage 是有時效性的，可能需要不停地刷新這個時效
-    resave: false,
-    // true: 還沒有正式初始化的 session 也真的存起來
-    saveUninitialized: false,
-  })
-);
+// 允許跨源存取
+// 預設是全部開放
+// 也可以做部分限制，參考 npm cors 的文件
+const cors = require('cors');
+app.use(cors());
 
 // middleware => pipeline pattern
 
@@ -51,10 +34,6 @@ app.use(
 // app.use(express.static('./static'));
 // localhost:3001/2048/
 app.use('/2048', express.static('./static'));
-
-// 處理使用者註冊時上傳的圖片網址
-// http://localhost:3001/public/uploads/1673160940458.png
-app.use('/public', express.static('./public'));
 
 // 中間件
 app.use((req, res, next) => {
@@ -75,21 +54,52 @@ app.use((req, res, next) => {
 // 路由中間件
 app.get('/', (req, res, next) => {
   console.log('這裡是首頁 2', req.mfee31, req.dt);
-  res.send('Hello Express 9');
+  res.send('Hello Express');
 });
 
 app.get('/api', (req, res, next) => {
-  res.json({ name: 'John', age: 21 });
+  res.json({
+    name: 'John',
+    age: 18,
+  });
 });
 
-const stockRouter = require('./routers/stockRouter');
-app.use('/api/stocks', stockRouter);
+app.get('/api/stocks', async (req, res, next) => {
+  // let results = await connection.query('SELECT * FROM stocks');
+  // let data = results[0];
+  console.log('這裡是 /api/stocks');
+  let [data] = await pool.execute('SELECT * FROM stocks');
+  res.json(data);
+});
 
-const authRouter = require('./routers/authRouter');
-app.use('/api/auth', authRouter);
+// localhost:3001/api/stocks/2330
+// req.params.stockId => 2330
+// SELECT * FROM stock_prices WHERE stock_id=2330
 
-const memberRouter = require('./routers/memberRouter');
-app.use('/api/members', memberRouter);
+// sql injection
+// localhost:3001/api/stocks/1234 or 1=1;--
+// req.params.stockId => 1234 or 1=1;--
+// SELECT * FROM stock_prices WHERE stock_id=1234 or 1=1;--
+app.get('/api/stocks/:stockId', async (req, res, next) => {
+  console.log('/api/stocks/:stockId => ', req.params.stockId);
+  let [data] = await pool.execute(
+    'SELECT * FROM stock_prices WHERE stock_id=?',
+    [req.params.stockId]
+  );
+  res.json(data);
+});
+
+app.post('/api/stocks', async (req, res, next) => {
+  console.log('POST /api/stocks', req.body);
+  // req.body.stockId, req.body.stockName
+  // 完成 insert
+  let results = await pool.execute(
+    'INSERT INTO stocks (id,name) VALUES (?,?)',
+    [req.body.stockId, req.body.stockName]
+  );
+  // console.log('POST stocks results', results);
+  res.json({ result: 'ok' });
+});
 
 app.use((req, res, next) => {
   console.log('這裡是的一個中間件 C');
@@ -107,7 +117,7 @@ app.get('/test', (req, res, next) => {
 // 利用了中間件會依照程式碼順序來執行的特性
 app.use((req, res, next) => {
   console.log('這裡是 404');
-  res.status(404).send('沒有這個網頁啦');
+  res.send('沒有這個網頁啦');
 });
 
 app.listen(3001, () => {
