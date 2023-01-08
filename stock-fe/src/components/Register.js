@@ -5,24 +5,49 @@ const Register = () => {
   const [member, setMember] = useState({
     email: 'test@gmail.com',
     name: 'test',
-    password: '12345',
-    confirmPassword: '12345',
+    password: 'test1234',
+    confirmPassword: 'test1234',
   });
 
+  // email input 的 change
+  // e.target ==> email input
+  // name input 的 change
+  // e.target ==> name input
   function handleChange(e) {
+    // console.log(e);
     // let newMember = { ...member };
     // newMember[e.target.name] = e.target.value;
     // setMember(newMember);
+
     setMember({ ...member, [e.target.name]: e.target.value });
+  }
+
+  function handleUpload(e) {
+    // file input 的值並不是存在 value 欄位裡
+    setMember({ ...member, photo: e.target.files[0] });
   }
 
   async function handleSubmit(e) {
     console.log('handleSubmit');
     e.preventDefault();
     // post後面的變數送入後端
-    let response = await axios.post('http://localhost:3001/api/auth/register', {
-      member,
-    });
+    // 作法1: 沒有檔案的表單
+    // let response = await axios.post(
+    //   'http://localhost:3001/api/auth/register',
+    //   member
+    // );
+    // 作法2: 有檔案的表單
+    let formData = new FormData();
+    formData.append('email', member.email);
+    formData.append('name', member.name);
+    formData.append('password', member.password);
+    formData.append('confirmPassword', member.confirmPassword);
+    formData.append('photo', member.photo);
+    let response = await axios.post(
+      'http://localhost:3001/api/auth/register',
+      formData
+    );
+
     console.log(response.data);
   }
   return (
@@ -91,6 +116,7 @@ const Register = () => {
           type="file"
           id="photo"
           name="photo"
+          onChange={handleUpload}
         />
       </div>
       <button

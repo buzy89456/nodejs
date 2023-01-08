@@ -2,7 +2,12 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../utils/db');
 
-router.get('/', async (req, res, next) => {
+function singleMiddleware(req, res, next) {
+  console.log('我是 single 中間件');
+  next();
+}
+
+router.get('/', singleMiddleware, async (req, res, next) => {
   // let results = await connection.query('SELECT * FROM stocks');
   // let data = results[0];
 
