@@ -10,6 +10,22 @@ const pool = require('./utils/db');
 // 需要加上這個中間件
 app.use(express.json());
 
+const expressSession = require('express-session');
+const FileStore = require('session-file-store')(expressSession);
+const path = require('path');
+app.use(
+  expressSession({
+    // 告訴 express-session session 要存哪裡
+    store: new FileStore({
+      path: path.join(__dirname, '..', 'sessions'),
+    }),
+    secret: process.env.SESSION_SECRET,
+    // true: 即使 session 沒有改變也重新儲存一次
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
 // 允許跨源存取
 // 預設是全部開放
 // 也可以做部分限制，參考 npm cors 的文件
@@ -77,7 +93,7 @@ app.get('/test', (req, res, next) => {
 // 利用了中間件會依照程式碼順序來執行的特性
 app.use((req, res, next) => {
   console.log('這裡是 404');
-  res.send('沒有這個網頁啦');
+  res.status(404).send('沒有這個網頁啦');
 });
 
 app.listen(3001, () => {

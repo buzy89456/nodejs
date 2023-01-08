@@ -121,4 +121,26 @@ router.post(
   }
 );
 
+router.post('/login', async (req, res, next) => {
+  // 資料驗證
+  // 確認 email 是否存在
+  let [members] = await pool.execute('SELECT * FROM members WHERE email = ?', [
+    req.body.email,
+  ]);
+  if (members.length === 0) {
+    // 表示 email 不存在資料庫中 -> 沒註冊過
+    return res.status(401).json({ erroes: [{ msg: '帳號或密碼錯誤' }] });
+  }
+  console.log('檢查 email 是否已經註冊過', members);
+
+  // 從陣列中拿出資料
+  let member = members[0];
+
+  // 不存在就回覆 401
+  // 如果存在，比對密碼
+  let result = await argon2.verify(member.password, req.body.password);
+
+  // 密碼錯誤，回覆前端 401
+});
+
 module.exports = router;
